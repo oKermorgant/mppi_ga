@@ -1,0 +1,13 @@
+# horizons
+hor: 11
+cont: 9
+sub: 3
+use_zoh: false
+
+# ga
+pop: 400
+multi: false
+cons: true
+bf: false
+
+plot: true
