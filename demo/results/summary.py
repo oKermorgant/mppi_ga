@@ -44,7 +44,10 @@ class Result:
     def mean(self):
         if self.data is None:
             self.read()
-        return np.mean(self.data)
+        try:
+            return np.mean(self.data)
+        except:
+            print(self.src)
 
     def read(self):
         if self.data is not None:
@@ -58,8 +61,8 @@ class Result:
 
 legend = {'ctime': 'Comp. time',
             'rollout': 'Rollouts',
-            'cost': 'Cost',
-            'error': 'Error',}
+            'cost': 'Prediction cost',
+            'error': 'Actual error',}
 
 N = len(legend)
 
@@ -71,6 +74,9 @@ def add_create(d, key, val = {}):
         d[key] = val
     else:
         d = {key: val}
+
+yticks = pl.linspace(0,1,11)
+yticklabels = [str(y)[:3] for y in yticks]
 
 
 for exp in os.listdir(robot):
@@ -93,7 +99,7 @@ for exp in os.listdir(robot):
 
     def bars(x, data, labels, xlabel, ylabel, title, name=None, normalize=True):
         pl.figure(figsize=(8,5))
-        print(data.shape)
+        # print(data.shape)
         N = data.shape[1]
         width = 0.9*1./N
         offset = -(N-1)*width/2
@@ -107,15 +113,16 @@ for exp in os.listdir(robot):
             elif isinstance(normalize, (list, tuple)):
                 print(normalize, i, data.shape)
                 scale = data[0, normalize[i]]
-            pl.bar(x+offset, values/scale, width=width, label=labels[i])
+            pl.bar(x+offset, values/scale, width=width, label=legend[labels[i]])
             if normalize:
                 ymax = max(ymax, np.amax(values/scale))
             offset += width
 
         if normalize:
-            pl.ylim(0,1.195*ymax)
+            pl.ylim(0,1.3*ymax)
         pl.xlabel(xlabel)
         pl.ylabel(ylabel)
+        pl.yticks(yticks, yticklabels)
         pl.title(title)
         pl.legend(ncols = N//2, loc = 'upper center')
         pl.tight_layout()
@@ -124,41 +131,44 @@ for exp in os.listdir(robot):
 
 
     pops = set(r.pop for r in results)
+    print('pops:',pops)
 
 
-    # for zoh in (False, True):
+    for zoh in (False, True):
 
-    for pop in pops:
+        for pop in pops:
 
-        for bf in ('f',):
+            for bf in ('f',''):
 
-            zoh = False
+                # zoh = False
 
-            # bars
-            this = sorted([r for r in results if r.matches(pop, zoh, bf)])
-            if not this:
-                continue
-            subs = np.array(list(set(t.sub for t in this)))
+                # bars
+                this = sorted([r for r in results if r.matches(pop, zoh, bf)])
+                if not this:
+                    continue
+                subs = np.array(list(set(t.sub for t in this)))
 
-            labels = list(legend.keys())
+                labels = list(legend.keys())
 
-            data = np.array([[get(pop, zoh, sub, l, bf) for sub in subs] for l in labels]).T
+                data = np.array([[get(pop, zoh, sub, l, bf) for sub in subs] for l in labels]).T
 
-            bars(subs, data, labels,
-                ('ZOH' if zoh else 'Linear') + ' subsampling (1 = no subsampling)',
-                'Comparison (1 for subsampling = 1)',
-                f'MPPI with {pop + 100*pop//2} runs' if bf else f'Population = {pop}, {method} start',
-                f'{root}/{"zoh" if zoh else "lin"}_{pop}{bf}')
+                print(pop, bf, zoh)
 
-            fields = [(t,bf) for t in ('ctime','cost') for bf in ('','f')]
-            data = np.array([[get(pop, zoh, sub, t, bf) for sub in subs] for t, bf in fields]).T
-            labels = [legend[t] + (' (f)' if bf else '') for t, bf in fields]
-            bars(subs, data, labels,
-                ('ZOH' if zoh else 'Linear') + ' subsampling (1 = no subsampling)',
-                'Mean value',
-                f'Population = {pop}',
-                f'{root}/{"zoh" if zoh else "lin"}_{pop}_comp',
-                normalize=[0, 0, 2,2])
+                bars(subs, data, labels,
+                    ('ZOH' if zoh else 'Linear') + ' subsampling (1 = no subsampling)',
+                    'Comparison (1 for subsampling = 1)',
+                    f'MPPI with {pop + 100*pop//2} runs' if bf else f'Population = {pop}',
+                    f'{root}/{"zoh" if zoh else "lin"}_{pop}{bf}')
+
+                # fields = [(t,bf) for t in ('ctime','cost') for bf in ('','f')]
+                # data = np.array([[get(pop, zoh, sub, t, bf) for sub in subs] for t, bf in fields]).T
+                # labels = [legend[t] + (' (f)' if bf else '') for t, bf in fields]
+                # bars(subs, data, labels,
+                #     ('ZOH' if zoh else 'Linear') + ' subsampling (1 = no subsampling)',
+                #     'Mean value',
+                #     f'Population = {pop}',
+                #     f'{root}/{"zoh" if zoh else "lin"}_{pop}_comp',
+                #     normalize=[0, 0, 2,2])
 
 
 

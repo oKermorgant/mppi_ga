@@ -34,12 +34,12 @@ struct Candidate
   inline static auto& engine()
   {
 #ifdef RAND_LOCAL
-    static thread_local auto engine = []()
-{
-  std::default_random_engine eng;
-  eng.seed(std::random_device()() + std::hash<std::thread::id>()(std::this_thread::get_id()));
-  return eng;
-}();
+	static thread_local auto engine = []()
+	{
+	  std::default_random_engine eng;
+	  eng.seed(std::random_device()() + std::hash<std::thread::id>()(std::this_thread::get_id()));
+	  return eng;
+	}();
 #else
 	static std::mutex mtx;
 	static std::default_random_engine engine;
@@ -48,11 +48,19 @@ struct Candidate
     return engine;
   }
 
-  inline void randomize(const Vec &uLim = {})
+  inline void randomize(const Vec &uLim = {}, const Vec &u_prev = {})
   {
-    auto rand_range = std::uniform_real_distribution(0., 1.);
-    for(size_t i = 0; i < u.size(); ++i)
-      u(i) = -uLim[i] + 2*uLim[i]*rand_range(engine());
+    static thread_local auto rand_range = std::uniform_real_distribution<Float>(-1., 1.);
+    if(u_prev.size())
+    {
+      for(size_t i = 0; i < u.size(); ++i)
+        u(i) = std::clamp<Float>(u_prev[i]+.3*rand_range(engine())*uLim[i], -uLim[i], uLim[i]);
+    }
+    else
+    {
+      for(size_t i = 0; i < u.size(); ++i)
+        u(i) = uLim[i]*rand_range(engine());
+    }
   }
 
   inline void crossAndMutate(const Candidate &p1, const Candidate &p2, const Vec &uLim)
@@ -88,6 +96,7 @@ class MPCGA : public MPPI<State, uDim, eDim>
 public:
   using MPPI<State, uDim, eDim>::params;
   using MPPI<State, uDim, eDim>::model;
+  using uVec = Eigen::Vector<Float,uDim>;
   /// problem is given externally
   explicit MPCGA(Model<State, uDim, eDim> &description) : MPPI<State, uDim, eDim>(description)
   {
@@ -161,7 +170,7 @@ public:
     //ScopedTimer timer("MPCGA::solve");
 
 	size_t start{};
-	if(this->imc.u.size())
+	if(this->u_prev.size())
 	{
 	  // get previous solution and re-evaluate
 	  auto &best = population.front() = *std::min_element(population.begin(), population.begin()+keep);
@@ -172,26 +181,21 @@ public:
 	  computeCost(population.front(), x0, xr);
 	}
 
-#if MPPI_PAR == MPPI_NOPAR
-	std::for_each(population.begin()+start, population.end(),
-				  [&](auto &cand){
-					cand.randomize(uLim);
-					computeCost(cand, x0, xr);}
-				  );
-#elif MPPI_PAR == MPPI_STDPAR
-	std::for_each(std::execution::par,
-				  population.begin()+start, population.end(),
-				  [&](auto &cand){
-					cand.randomize(uLim);
-					computeCost(cand, x0, xr);}
-				  );
-
+	std::for_each(
+#if MPPI_PAR == MPPI_STDPAR
+		std::execution::par,
 #endif
+		population.begin()+start, population.end(),
+		[&](auto &cand){
+		  cand.randomize(uLim, this->u_prev);
+		  computeCost(cand, x0, xr);}
+		);
+
 
 	stats.rollouts = pop_size;
 	auto best = keep ? solve_ga(x0, xr) : solve_bf(x0, xr);
 	stats.cost = best.cost;
-	return best.u.head(uDim);
+	return best.u;
   }
 
   /// Meta parameters of cost function

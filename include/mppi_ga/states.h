@@ -10,7 +10,7 @@
 namespace mppi_ga
 {
 
-constexpr Float half = 0.5;
+constexpr Float half{0.5};
 
 struct SE2
 {
@@ -20,7 +20,7 @@ struct SE2
   Float qz{0.};
 
   inline SE2() = default;
-  inline SE2(Float x, Float y, Float qw, Float qz) : x{x}, y{y}, qw{qw}, qz{qz} {}
+  inline SE2(Float x, Float y, Float angle) : x{x}, y{y}, qw{std::cos(angle*half)}, qz{std::sin(angle*half)} {}
 
   void update(const Float vx, const Float vy, const Float w, Float dt)
   {
@@ -28,8 +28,8 @@ struct SE2
     const auto c{qw*qw-qz*qz};
     const auto s{2*qw*qz};
 
-	x += (vx*c + vy*s)*dt;
-	y += (vy*c - vx*s)*dt;
+	x += (vx*c - vy*s)*dt;
+	y += (vy*c + vx*s)*dt;
 
 	// rotation
 	const auto qw0{qw};
@@ -43,6 +43,20 @@ struct SE2
 	  scale = Float(1)/std::sqrt(norm);
 	qw *= scale;
 	qz *= scale;
+  }
+};
+
+struct SE2twist
+{
+  SE2 pose{};
+  Eigen::Vector<Float,3> twist{Vec::Zero(3)}; // vx, vy, w
+  inline SE2twist() = default;
+  inline void update(const Eigen::Vector<Float,3> &accel, Float dt)
+  {
+    // update twist
+    twist += half*accel*dt;
+    pose.update(twist(0), twist(1), twist(2), dt);
+    twist += half*accel*dt;
   }
 };
 
@@ -76,9 +90,9 @@ struct SE3twist
   inline void update(const Eigen::Vector<Float,6> &accel, Float dt)
   {
     // update twist
-    twist += half*accel*dt;
+    twist += half*accel*dt/2;
     pose.update(twist, dt);
-    twist += half*accel*dt;
+    twist += half*accel*dt/2;
   }
 };
 

@@ -54,9 +54,9 @@ int main(int argc, char**argv)
 
   // starting position
   BicycleState cur;
-  cur.pose.x = 6;
-  cur.pose.y = -2;
-  cur.pose.qw = cur.pose.qz = sqrt(2)/2;
+  cur.pose = {1.05*xs,
+              -0.1,
+              M_PI/2};
 
   const auto base_path{result_path("bicycle",config)};
 
@@ -69,8 +69,8 @@ int main(int argc, char**argv)
   //logger.saveTimed(theta, "theta_err", "[\\theta-\\theta^*]", "orientation error [rad]");
   //logger.setLineType("[C2]");
   //logger.saveTimed(u, "cmd", "[v, \\omega]", "command");
-  logger.saveXY(xy2, "xy", "[Actual, Reference]", "x [m]", "y [m]");
-  logger.setLineType("[C0d-,C1-]");
+  logger.saveXY(xy2, "xy", "[Reference, Actual]", "x [m]", "y [m]");
+  logger.setLineType("[C0--,C1-]");
   logger.setPlotArgs("--equal");
   //logger.showFixedShape(log2plot::Shape({{cur(0), cur(1)},{xr(0), xr(1)}}, "rD"));
   logger.saveTimed(ctime, "ctime", "[t_c]", "comp. time [ms]");
@@ -99,10 +99,10 @@ int main(int argc, char**argv)
 	ctime[0] = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - start).count()/1000.;
 	robot.reference(t, xr);	
 
-	xy2[0] = cur.pose.x;
-	xy2[1] = cur.pose.y;
-	xy2[2] = xr.pose.x;
-	xy2[3] = xr.pose.y;
+	xy2[2] = cur.pose.x;
+	xy2[3] = cur.pose.y;
+	xy2[0] = xr.pose.x;
+	xy2[1] = xr.pose.y;
 
 	rollout[0] = mpc.stats.rollouts;
 	cost[0] = mpc.stats.cost;
@@ -117,7 +117,7 @@ int main(int argc, char**argv)
 	  cur = robot.xNext(cur,u,dt);
 	  t += dt;
 	}
-	  first = false;
+	first = false;
   }
 
   std::cout << "Avg. time: " << std::accumulate(times.begin(), times.end(), 0)/times.size()

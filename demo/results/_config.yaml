@@ -1,11 +1,11 @@
 # horizons
 hor: 11
 cont: 9
-sub: 3
+sub: 5
 use_zoh: false
 
 # ga
-pop: 400
+pop: 300
 multi: false
 cons: true
 bf: false

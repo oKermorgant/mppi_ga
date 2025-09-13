@@ -11,13 +11,12 @@ namespace mppi_ga
 template <class State, Index uDim, Index eDim>
 struct Model
 {
-  Vec uLim;
+  Eigen::Vector<Float, uDim> uLim;
 
   // init with dimension
   Model()
   {
     assert(eDim>0 && uDim>0);
-    uLim.resize(uDim);
     setMaxCommand(std::numeric_limits<Float>::max());
   }
 

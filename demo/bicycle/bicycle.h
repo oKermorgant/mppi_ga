@@ -9,10 +9,12 @@ using namespace mppi_ga;
 
 // reference
 constexpr auto w{.5};
-constexpr auto a{1.5};
-constexpr auto b{4.};
+constexpr auto xs{10.5};
+constexpr auto ys{9.};
+constexpr auto ymax{10.};
 constexpr auto tf{2*M_PI/w};
 constexpr auto beta_max{M_PI/3};
+
 
 // model
 constexpr auto L{1.5};
@@ -44,8 +46,8 @@ struct Bicycle : public mppi_ga::Model<BicycleState, 2, 2>
   {
     const auto cr{cos(w*t)};
     const auto sr{sin(w*t)};
-    xr.pose.x = (a+b*cr)*cr;
-    xr.pose.y = (a+b*cr)*sr;
+    xr.pose.x = xs*cr;
+    xr.pose.y = ys*sr*cr;
 
 	/*xr(4) = atan2(w*(a*cr - 2*b*sr*sr + b), w*(a + 2*b*cr)*sr);
 	xr(2) = cos(xr(4)/2);
@@ -63,11 +65,11 @@ struct Bicycle : public mppi_ga::Model<BicycleState, 2, 2>
   {
     if(!constraint)
       return 0.;
-    if(x.pose.y < 2)
+    if(x.pose.y < ymax*0.99)
       return 0;
-    else if(x.pose.y >= 2.5)
+    else if(x.pose.y >= ymax)
       return 10000;
-    return -log(2.5-x.pose.y);
+    return -log(ymax-x.pose.y);
   }
 };
 

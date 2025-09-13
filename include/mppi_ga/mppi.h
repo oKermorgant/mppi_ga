@@ -51,7 +51,9 @@ struct MPCParams
 template <class State, Index uDim, Index eDim>
 class MPPI
 {
+protected:
   using Clock = std::chrono::steady_clock;
+  using uVec = Eigen::Vector<Float,uDim>;
 public:
 
   virtual inline std::string describe() const
@@ -90,7 +92,7 @@ public:
   }
 
   // solve for current state at given time
-  Vec solve(const State &x0, Float t0)
+  uVec solve(const State &x0, Float t0)
   {
     if(model == nullptr)
     {
@@ -107,7 +109,7 @@ public:
     return solve(x0);
   }
 
-  Vec solve(const State &x0)
+  uVec solve(const State &x0)
   {
     //ScopedTimer("solve");
     if(params.changed())
@@ -138,9 +140,9 @@ public:
       imc.xdot.resize(xDim);
     }
   }*/
-    imc.u = solve_impl(x0, xr);
+    u_prev = solve_impl(x0, xr);
     params.status = ParamStatus::DONE;
-    return imc.u;
+    return u_prev.template head<uDim>();
   }
 
   /// problem is given externally
@@ -186,12 +188,13 @@ public:
   }
 
   // cache + robustness
-  struct IMC
+  /*struct IMC
   {
     Vec x, u;
-  };
+  };*/
 
-  IMC imc;
+  Vec u_prev;
+  //IMC imc;
   Vec imc_e;
 };
 

@@ -42,7 +42,7 @@ int main(int argc, char**argv)
   mpc.showDimension();
 
   SE3twist xr, cur;
-  Vec u = robot.uLim;
+  Vec u = 0*robot.uLim;
   // starting position
   cur.pose.p = {amp, 0., 0};
 
@@ -59,12 +59,12 @@ int main(int argc, char**argv)
 
 
   logger.regroupNext(2);
+  logger.save3Dpose(xr.pose.p, "ref", "ref");
   logger.save3Dpose(cur.pose.p, "pose", "pose");
   const auto xl{.5};
   const auto yl{.3};
   const auto zl{.2};
   //logger.showMovingShape(log2plot::Box(-xl/2,-yl/2,-zl/2, xl/2, yl/2, zl/2, "C0", "pose"));
-  logger.save3Dpose(xr.pose.p, "ref", "ref");
   //logger.saveTimed(xy, "xy_err", "[x-x^*,y-y^*]", "position error [m]");
   //logger.setLineType("[C0,C1]");
   //logger.saveTimed(theta, "theta_err", "[\\theta-\\theta^*]", "orientation error [rad]");
