@@ -9,7 +9,7 @@
 using namespace mppi_ga;
 
 // ref trajectory
-constexpr Float vx{.7};
+constexpr Float vx{.3};
 constexpr Float yAmp{30};
 constexpr Float xAdv{7};
 constexpr auto tf{4*(yAmp+xAdv)/vx + xAdv/(2*vx)};

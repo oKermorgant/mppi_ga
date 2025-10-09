@@ -43,7 +43,7 @@ int main(int argc, char**argv)
   PendState xr, cur;
   Vec u = 0*robot.uLim;
   // starting position
-  cur.theta = M_PI/6;
+  cur.theta = M_PI/10;
 
   auto t{0.};
   if(mpc.params.multi)
@@ -76,7 +76,7 @@ int main(int argc, char**argv)
   std::vector<double> times;
   auto first{true};
 
-  while(t < 10.)
+  while(t < 5.)
   {
 	const auto start{Clock::now()};
 	u = mpc.solve(cur, t);
@@ -89,16 +89,25 @@ int main(int argc, char**argv)
 	cost[0] = mpc.stats.cost;
 	error[0] = robot.error(cur, xr).norm();
 
-	xv(0) = cur.theta;
-	xv(1) = xr.theta;
+	xv(0) = cur.theta*180./M_PI;
+	xv(1) = xr.theta*180./M_PI;
 
 	if(!first)
 	{
-	  logger.update();
-	  times.push_back(ctime[0]);
-
 	  // apply / update x0
 	  cur = robot.xNext(cur,u,dt);
+
+	  xv(0) = cur.theta*180./M_PI;
+
+
+
+	  logger.update();
+
+	  times.push_back(ctime[0]);
+
+
+
+
 	  t += dt;
 	}
 	first = false;

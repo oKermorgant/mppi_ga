@@ -10,7 +10,7 @@ constexpr Float g{9.81};
 
 Pend::Pend()
 {
-  setMaxCommand(2.);
+  setMaxCommand(10.);
 }
 
 PendState Pend::xNext(const PendState &x, const Vec &u, Float dt)
@@ -18,10 +18,13 @@ PendState Pend::xNext(const PendState &x, const Vec &u, Float dt)
   auto xNext = x;
 
   // update state with semi-implicit euler
-  const auto accel{(-g/L*std::sin(x.theta) + u(0)/M)};
-  xNext.tdot += half*accel*dt;
-  xNext.theta += xNext.tdot*dt;
-  xNext.tdot += half*accel*dt;
+  const auto s{std::sin(xNext.theta)};
+  const auto c{std::cos(xNext.theta)};
+  const auto tdd = (u(0)*c+(M+m)*g*s - L*m*c*x.tdot*x.tdot)/(L*(M+m*s*s));
+
+  xNext.tdot += half*tdd*dt;
+  xNext.theta += x.tdot*dt;
+  xNext.tdot += half*tdd*dt;
   return xNext;
 }
 

@@ -3,7 +3,6 @@
 
 #include <mppi_ga/types.h>
 #include <Eigen/Geometry>
-#include <iostream>
 
 // define classical states
 

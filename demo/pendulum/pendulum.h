@@ -16,7 +16,7 @@ struct PendState
 
 struct Pend : public mppi_ga::Model<PendState, 1, 1>
 {
-  static constexpr Float M{1.};
+  static constexpr Float M{1.}, m{.2};
   static constexpr Float L{1.};
   Pend();
 

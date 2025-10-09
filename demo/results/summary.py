@@ -8,6 +8,8 @@ import pylab as pl
 import matplotlib
 
 matplotlib.rcParams.update({'font.size': 16})
+matplotlib.rc('font', family='sans-serif')
+matplotlib.rc('text', usetex = True)
 
 robot = sys.argv[1] if (len(sys.argv) > 1 and sys.argv[1] != '-e') else 'bicycle'
 fontsize = 16
@@ -44,16 +46,19 @@ class Result:
     def mean(self):
         if self.data is None:
             self.read()
-        try:
-            return np.mean(self.data)
-        except:
-            print(self.src)
+        return np.mean(self.data)
 
     def read(self):
+
         if self.data is not None:
             return
         with open(self.src) as data:
-            self.data = np.array(yaml.safe_load(data)['data'])[:,1]
+
+            self.data = [elem[1] for elem in yaml.safe_load(data)['data']]
+
+            # self.data = np.array(yaml.safe_load(data)['data'])[:,1]
+            self.data = np.array([v for v in self.data if not isinstance(v, str)])
+
 
     def __lt__(self, other):
         return self.sub < other.sub
@@ -122,7 +127,8 @@ for exp in os.listdir(robot):
             pl.ylim(0,1.3*ymax)
         pl.xlabel(xlabel)
         pl.ylabel(ylabel)
-        pl.yticks(yticks, yticklabels)
+        pl.grid(axis='y')
+        # pl.yticks(yticks, yticklabels)
         pl.title(title)
         pl.legend(ncols = N//2, loc = 'upper center')
         pl.tight_layout()

@@ -4,7 +4,7 @@
 #include "boat.h"
 #include <Eigen/QR>
 
-//#define USE_ANGLE
+#define USE_ANGLE
 
 using namespace mppi_ga;
 
@@ -18,7 +18,7 @@ Boat::Boat()
 #ifdef USE_ANGLE
   setMaxCommand({fMax,fMax,Tmax, Tmax});
 #else
-  setMaxCommand({fMax,fMax,Tmax/3, Tmax/3});
+  setMaxCommand({fMax,fMax,Tmax*3, Tmax*3});
 #endif
 
   Minv << 1000, 0, 0,
@@ -31,7 +31,7 @@ Boat::Boat()
 
   // get vmax
   const auto D{dl(0)*dl(0) + 8*(dq(0)*fMax)};
-  std::cout << "vmax = " << (-dl(0) + sqrt(D))/(2*dl(0)) << "\n";
+  std::cout << "vmax = " << (-dl(0) + sqrt(D))/(2*dl(0)) << " m/s\n";
 }
 
 BoatState Boat::xNext(const BoatState &x, const Vec &u, Float dt)

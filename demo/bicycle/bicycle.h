@@ -8,7 +8,7 @@
 using namespace mppi_ga;
 
 // reference
-constexpr auto w{.5};
+constexpr auto w{.4};
 constexpr auto xs{10.5};
 constexpr auto ys{9.};
 constexpr auto ymax{10.};
@@ -30,7 +30,7 @@ struct Bicycle : public mppi_ga::Model<BicycleState, 2, 2>
   bool constraint{false};
   Bicycle(bool constraint) : constraint(constraint)
   {
-    setMaxCommand(10.);
+    setMaxCommand({10., beta_max*3});
   }
 
   BicycleState xNext(const BicycleState &x, const Vec &u, Float dt) override

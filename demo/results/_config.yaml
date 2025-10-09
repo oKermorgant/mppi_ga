@@ -1,13 +1,13 @@
 # horizons
 hor: 11
 cont: 9
-sub: 5
+sub: 1
 use_zoh: false
 
 # ga
-pop: 300
+pop: 50
 multi: false
-cons: true
+cons: false
 bf: false
 
 plot: true

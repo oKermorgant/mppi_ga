@@ -21,7 +21,7 @@ int main(int argc, char**argv)
   Bicycle robot{config.read<bool>("cons")};
 
   MPCGA mpc(robot);
-  const auto dt{0.05};
+  const auto dt{0.1};
 
   const auto sub{config.read<int>("sub")};
   mpc.params.use_zoh = config.read<bool>("use_zoh");
@@ -38,8 +38,8 @@ int main(int argc, char**argv)
   // 9 11
   mpc.configureHorizon(ControlHorizon(config.read<int>("cont")),
                        PredictionHorizon(config.read<int>("hor")),
-                       0.05, Subsampling(sub));
-  mpc.configureCost(.9, .9, {1000,1000}, {.01,0.01}); // theta and beta do not count in the cost
+                       dt, Subsampling(sub));
+  mpc.configureCost(.8, .8, {1000,1000}, {.01,0.1}); // theta and beta do not count in the cost
 
   mpc.showDimension();
 
@@ -88,12 +88,12 @@ int main(int argc, char**argv)
 
   std::vector<double> times;
   auto first{true};
-  while(t < 1.3*tf)
+  while(t < 1.1*tf)
   {
     // find next control input
 
 	const auto start{Clock::now()};
-	u = .5*(u+mpc.solve(cur, t));
+	u = mpc.solve(cur, t);
 
 	//std::cout << u.transpose() << std::endl;
 	ctime[0] = std::chrono::duration_cast<std::chrono::microseconds>(Clock::now() - start).count()/1000.;
@@ -105,7 +105,7 @@ int main(int argc, char**argv)
 	xy2[1] = xr.pose.y;
 
 	rollout[0] = mpc.stats.rollouts;
-	cost[0] = mpc.stats.cost;
+	cost[0] = mpc.stats.rollouts + .5*mpc.stats.cost;
 	error[0] = robot.error(cur, xr).norm();
 
 	if(!first)

@@ -35,7 +35,7 @@ int main(int argc, char**argv)
 
   mpc.setMaxIter(iter, iter/2);
   mpc.configureHorizon(ControlHorizon(9), PredictionHorizon(11), dt, Subsampling(sub));
-  mpc.configureCost(.95, .95,
+  mpc.configureCost(.8, .8,
                     {10000,10000},
                     std::vector<Float>(4, 1.));
 
