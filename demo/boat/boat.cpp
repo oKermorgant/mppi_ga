@@ -3,6 +3,7 @@
 #include <mppi_ga/types.h>
 #include "boat.h"
 #include <Eigen/QR>
+#include <iostream>
 
 #define USE_ANGLE
 

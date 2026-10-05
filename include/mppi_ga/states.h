@@ -32,8 +32,8 @@ struct SE2
 
 	// rotation
 	const auto qw0{qw};
-	qw = qw -w*qz/2*dt;
-	qz = qz + w*qw0/2*dt;
+    qw += -w*qz/2*dt;
+    qz += w*qw0/2*dt;
 
 	// normalize
 	const auto norm{qw*qw+qz*qz};

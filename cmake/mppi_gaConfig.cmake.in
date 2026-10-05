@@ -1,7 +1,0 @@
-# This file exports the CMake target which should be passed to the
-# target_link_libraries command.
-
-set(PARAMPC_FOUND 1)
-set(PARAMPC_INCLUDE_DIRS "${INCLUDE_DEPENDS}")
-set(PARAMPC_LIBRARIES "${LIB_DEPENDS}")
-
